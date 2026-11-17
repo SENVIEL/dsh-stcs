@@ -1,0 +1,10 @@
+﻿node_modules/
+dist/
+*.tgz
+.tmp/
+tmp/
+*.log
+.DS_Store
+Thumbs.db
+live-*.png
+pause.test_s1/

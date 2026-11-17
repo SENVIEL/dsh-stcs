@@ -1,0 +1,146 @@
+# ============================================================================
+# STCS — single-package ARTEX-style preset + host plugin.
+#
+# This bundle ONLY inserts a new preset declaration. It does not modify any
+# existing preset, bundle, profile patch or runtime copy.
+#
+# Design:
+#   - preset id: artex (internal id; user-facing name: STCS)
+#   - one complete inline config.plugins list (no cordis:include, no external
+#     agent.cordis.yml);
+#   - dsh-stcs supplies the existing canonical v4 state, tools, UI
+#     projection, report and visible-teammate audit pipeline;
+#   - dsh-stcs/artex supplies the host Coordinator, read-only status tool,
+#     tool guard and the final `stcs:protocol` prompt section;
+#   - no pentest-guard / pentest-preset-root / storage-sqlite rows: those
+#     belong to dsh-stcs; the package root row carries its own Web client.
+#   - no subagent/workflow/agent-team tools: the root session must not dispatch;
+#   - no tool-goal: the model must never create/resume/edit/complete a native
+#     DSH goal; only the user may pause/end a target;
+#   - tool-web.fetch: true (the old pentest preset disabled web fetching).
+# ============================================================================
+
+- insert:
+    - id: preset-artex
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: artex
+        name: STCS
+        description: >-
+          STCS（ARTEX 式）授权渗透编排：Host 侧持久 Coordinator、黑板图、
+          短命 fresh worker、可见 auditor 与分级结论。主会话只读；目标只由
+          用户暂停/结束；报告生成员默认不启动。
+        order: 12
+        plugins:
+          # ── identity ────────────────────────────────────────────────────────
+          - id: persona
+            name: '@deepseek-ai/dsh-persona'
+            config:
+              prefix: |-
+                你是 STCS（ARTEX 式渗透编排）预设中的 Agent，powered by {{model}}。
+                根会话（没有 parentSession）是只读人机界面：聊天、看结果、按用户明确指令暂停/结束/生成报告；不生成方向、不派 worker、不写图。
+                被 Coordinator 派生的 worker 或 role teammate（有 parentSession / Team role=teammate）只执行分配给你的单一任务，不写 v4 图、不 spawn 子代理、不调用 pentest_flow_* 写工具。
+                调度、任务生成、黑板写入全部由 Host 侧 Coordinator 负责；主会话看到的只是结果。
+
+          - id: agent-instructions
+            name: '@deepseek-ai/dsh-agent-instructions'
+            config:
+              maxBytes: 65536
+
+          - id: time-context
+            name: '@deepseek-ai/dsh-time-context'
+
+          # ── shell / filesystem ──────────────────────────────────────────────
+          - id: tool-bash
+            name: '@deepseek-ai/dsh-tool-bash'
+            disabled: !!js process.platform === 'win32'
+
+          - id: tool-pwsh
+            name: '@deepseek-ai/dsh-tool-pwsh'
+            disabled: !!js process.platform !== 'win32'
+
+          - id: tool-fs
+            name: '@deepseek-ai/dsh-tool-fs'
+
+          - id: tool-fs-search
+            name: '@deepseek-ai/dsh-tool-fs-search'
+            config:
+              sampleOverCapGlobResults: false
+
+          - id: tool-jobs
+            name: '@deepseek-ai/dsh-tool-jobs'
+
+          # ── skills ──────────────────────────────────────────────────────────
+          - id: skill-filesystem
+            name: '@deepseek-ai/dsh-skill-filesystem'
+
+          - id: tool-skill
+            name: '@deepseek-ai/dsh-tool-skill'
+
+          # ── user-owned goal command only (NO tool-goal) ─────────────────────
+          - id: command-goal
+            name: '@deepseek-ai/dsh-command-goal'
+
+          # ── compaction ──────────────────────────────────────────────────────
+          - id: compaction
+            name: cordis:group
+            group: true
+            isolate:
+              compaction: true
+              toolResultPruner: true
+            config:
+              - id: compaction-basic
+                name: '@deepseek-ai/dsh-compaction-basic'
+              - id: command-compact
+                name: '@deepseek-ai/dsh-command-compact'
+              - id: tool-result-pruner
+                name: '@deepseek-ai/dsh-compaction-tool-result-pruner'
+                config:
+                  thresholdChars: 8192
+                  headChars: 4096
+                  tailChars: 1024
+
+          # ── human interaction / plan surface ───────────────────────────────
+          - id: tool-ask-user
+            name: '@deepseek-ai/dsh-tool-ask-user'
+
+          - id: tool-todo
+            name: '@deepseek-ai/dsh-tool-todo'
+            config:
+              allowParallelInProgress: true
+
+          - id: tool-web
+            name: '@deepseek-ai/dsh-tool-web'
+            config:
+              fetch: true
+              searchTimeoutMs: 60000
+
+          - id: present
+            name: '@deepseek-ai/dsh-tool-present'
+
+          # ── canonical v4 engine (shared realm) ──────────────────────────────
+          # dsh-stcs publishes `pentestV4`; the Coordinator row consumes
+          # it. Both MUST be in the same isolate realm, otherwise Host 0.2.2
+          # rejects the preset ("require isolate realms: pentestV4") and the
+          # coordinator never starts.
+          - id: pentest
+            name: 'dsh-stcs'
+            isolate:
+              pentestV4: 'stcs'
+
+          # ── STCS Coordinator (new host-side plugin) ────────────────────────
+          - id: artex-coordinator
+            name: 'dsh-stcs/artex'
+            isolate:
+              pentestV4: 'stcs'
+            config:
+              enabled: true
+              scanMs: 3000
+              maxWorkers: 6
+              workerPreset: artex
+              strictPlanner: true
+              maxDecisions: 500
+              maxAttachmentBytes: 8192
+              maxHypotheses: 240
+              maxDurationMs: 0
+              auditTimeoutMs: 180000
