@@ -1,4 +1,4 @@
-﻿import assert from 'node:assert/strict'
+import assert from 'node:assert/strict'
 import test from 'node:test'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -13,12 +13,13 @@ test('dsh-stcs is one self-contained bundle package', () => {
   assert.equal(pkg.dsh.bundle.patch, './cordis.patch.yml')
   assert.ok(pkg.files.includes('cordis.patch.yml'))
   assert.equal(pkg.dependencies, undefined)
-  assert.equal((patch.match(/^- insert:/gm) || []).length, 1)
+  assert.equal((patch.match(/^- insert:/gm) || []).length, 2)
   assert.match(patch, /id: preset-artex/)
   assert.match(patch, /id: artex\b/)
   assert.match(patch, /name: STCS/)
-  assert.match(patch, /name: 'dsh-stcs'/)
+  assert.match(patch, /- id: pentest\n            name: 'dsh-stcs\/plugin'/)
   assert.match(patch, /name: 'dsh-stcs\/artex'/)
+  assert.match(patch, /- id: ui-stcs\n      name: 'dsh-stcs'/)
   assert.match(patch, /fetch: true/)
   assert.doesNotMatch(patch, /@howmp\/dsh-pentest/)
   assert.doesNotMatch(patch, /dsh-pentest-stcs/)

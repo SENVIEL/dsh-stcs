@@ -124,7 +124,7 @@
           # rejects the preset ("require isolate realms: pentestV4") and the
           # coordinator never starts.
           - id: pentest
-            name: 'dsh-stcs'
+            name: 'dsh-stcs/plugin'
             isolate:
               pentestV4: 'stcs'
 
@@ -144,3 +144,7 @@
               maxHypotheses: 240
               maxDurationMs: 0
               auditTimeoutMs: 180000
+
+- insert:
+    - id: ui-stcs
+      name: 'dsh-stcs'

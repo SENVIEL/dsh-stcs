@@ -46,6 +46,10 @@ test('role runner uses named preset, maxDepth 1 and records role state', async (
   assert.equal(subagents.calls[0].request.agentPreset, 'pentest-validator')
   assert.equal(subagents.calls[0].request.maxDepth, 1)
   assert.equal(subagents.calls[0].request.outputSchema.required.includes('verdict'), true)
+  // DSH 0.2.2 reads activation fields from the top-level spec, not the legacy
+  // nested `request` object. Keep both so old and new hosts can start roles.
+  assert.equal(subagents.calls[0].parent.id, 'lead')
+  assert.equal(Array.isArray(subagents.calls[0].prompt), true)
   assert.equal(session.state.roles.validator.lastStatus, 'completed')
   assert.equal(session.state.roles.validator.lastVerdict, 'reproduced')
   assert.equal(session.state.roles.validator.lastChildId, 'child-1')

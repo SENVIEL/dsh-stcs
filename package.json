@@ -1,6 +1,6 @@
 {
   "name": "dsh-stcs",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "STCS (ARTEX-style) penetration-test orchestration: self-contained host plugin, preset and Web UI.",
   "type": "module",
   "main": "./index.js",
