@@ -1,6 +1,6 @@
 # dsh-stcs
 
-STCS（ARTEX 风格）授权渗透测试编排预设。这个仓库是 **Host 插件 + STCS 预设 + Web UI** 的独立单包实现，不依赖 `@howmp/dsh-pentest` 运行。
+STCS（ARTEX 风格）授权渗透测试编排预设。这个仓库是 **Host 插件 + STCS 预设 + Web UI** 的独立单包实现，不依赖外部 pentest UI 包运行。
 
 ## 特性
 
@@ -40,7 +40,7 @@ target: "C:\Users\MR\Desktop\dsh\dsh-stcs"
 2. 新建会话；
 3. 在预设列表选择 **STCS**。
 
-如果目标机器已经安装了旧的 `@howmp/dsh-pentest` UI bundle，建议先禁用或移除它的 `ui-pentest` 行，避免和本包内置的 UI 重复注册。
+如果目标机器已经安装了其他 pentest UI bundle，建议先禁用或移除它的 `ui-pentest` 行，避免和本包内置的 UI 重复注册。
 
 ## 从源码打包
 
@@ -125,9 +125,9 @@ Host Coordinator ── Planner (only intent source)
 - 证据与报告限制在会话 workdir 内。
 - 根会话对实测工具保持只读；实际动作由 Coordinator 派生的 worker 执行。
 
-## UI 来源说明
+## UI 说明
 
-`lib/ui-stcs.client.js` 基于 MIT 许可的 `@howmp/dsh-pentest` Web 客户端改造，包标识已改为 `dsh-stcs`。本包没有 `@howmp/dsh-pentest` 运行时依赖。详见 `THIRD-PARTY-NOTICES.md`。
+`lib/ui-stcs.client.js` 随包提供，不需要额外安装外部 pentest UI 包。
 
 ## License
 
